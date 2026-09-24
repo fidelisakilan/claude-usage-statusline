@@ -32,7 +32,7 @@ Add to `~/.claude/settings.json`:
 
 ```json
 {
-  "statusLine": { "type": "command", "command": "~/.claude/statusline.sh", "refreshInterval": 1 }
+  "statusLine": { "type": "command", "command": "~/.claude/statusline.sh", "refreshInterval": 2 }
 }
 ```
 
@@ -40,4 +40,4 @@ Add to `~/.claude/settings.json`:
 
 Right alignment reads the terminal width from `/dev/tty`, then `$COLUMNS`. If neither is available, the usage stats sit two spaces after the model name.
 
-`refreshInterval: 1` re-runs the script every second so the alignment catches up after you resize or zoom the terminal; without it, Claude Code only redraws the status line on conversation events.
+`refreshInterval: 2` re-runs the script every 2 seconds so the alignment catches up after you resize or zoom the terminal; without it, Claude Code only redraws the status line on conversation events.
