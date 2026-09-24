@@ -1,5 +1,5 @@
 #!/bin/bash
-# Mood face + model on the left; cost · ctx % · 5h % · 7d % right-aligned
+# Model on the left; cost · ctx % · 5h % · 7d % · mood face right-aligned
 export LC_ALL=en_US.UTF-8
 { read -r model; read -r face; read -r color; read -r line; } < <(jq -r '
   def pct(p): "\(p // 0 | floor)%";
@@ -20,4 +20,4 @@ export LC_ALL=en_US.UTF-8
 cols=$( { stty size </dev/tty | cut -d" " -f2; } 2>/dev/null ); cols=${cols:-$COLUMNS}
 pad=$(( ${cols:-0} - ${#model} - ${#face} - 1 - ${#line} - 4 ))  # 4 = Claude Code's own left indent + margin
 (( pad < 2 )) && pad=2
-printf '\e[%sm%s\e[0m %s%*s%s' "$color" "$face" "$model" "$pad" '' "$line"
+printf '%s%*s%s \e[%sm%s\e[0m' "$model" "$pad" '' "$line" "$color" "$face"
