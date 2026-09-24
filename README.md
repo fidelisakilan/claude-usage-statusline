@@ -2,7 +2,13 @@
 
 A one-line [Claude Code](https://claude.com/claude-code) status line: model on the left; session cost, context use, and plan usage limits on the right.
 
-![status line](screenshots/statusline.png)
+**Dark**
+
+![status line, dark mode](screenshots/dark.png)
+
+**Light**
+
+![status line, light mode](screenshots/light.png)
 
 ```
 Opus 5.5 (1M context)                              $0.22 · ctx 4% · 5h 12% · 7d 30%
