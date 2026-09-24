@@ -7,7 +7,7 @@ export LC_ALL=en_US.UTF-8
   (.rate_limits.five_hour.used_percentage // .context_window.used_percentage // 0 | floor) as $p |
   (if $p >= 100 then 7 elif $p >= 90 then 6 else ([$p / 15 | floor, 5] | min) end) as $s |
   ((now / 2 | floor) % 6 == 5) as $blink |
-  .model.display_name,
+  (.model.display_name | sub(" \\(.*\\)$"; "")),  # "Opus 5.5 (1M context)" → "Opus 5.5"
   (if $blink then ["(-‿-)","(-_-)","(-‿-)","(-_-)"] else ["(^‿^)","(^_^)","(•‿•)","(•_•)"] end
     + ["(¬_¬)","(°□°)","(ಥ_ಥ)","(×_×)"])[$s],
   (if $p >= 90 then 31 elif $p >= 75 then 91 elif $p >= 55 then 33 else 32 end),
