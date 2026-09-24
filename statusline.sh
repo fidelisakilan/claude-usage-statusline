@@ -23,7 +23,11 @@ d=/tmp/claude-statusline/$sid; now=$(date +%s)
 mtime=$(stat -c %Y "$t" 2>/dev/null || stat -f %m "$t" 2>/dev/null || echo "$now")
 # ponytail: an agent whose stop event is missed lingers at most 30 min
 agents=$(find "$d/agents" -type f -mmin -30 2>/dev/null | wc -l | tr -d ' ')
-# ponytail: Stop doesn't fire on Esc-interrupt, so busy also needs transcript activity in the last 60s
+# Stop doesn't fire on Esc-interrupt, but the transcript's last entry becomes "[Request interrupted by user]"
+[[ -e $d/busy ]] && tail -n 1 "$t" 2>/dev/null | jq -e 'select(.type == "user") | .message.content
+  | (if type == "array" then .[0].text else . end) // "" | startswith("[Request interrupted by user")' >/dev/null 2>&1 \
+  && rm -f "$d/busy"
+# ponytail: busy also needs transcript activity in the last 60s, a backstop for anything else that skips Stop
 busy=false; { [[ -e $d/busy ]] && (( now - mtime < 60 )); } || (( agents > 0 )) && busy=true
 { read -r model; read -r face; read -r color; read -r line; } < <(jq -r \
   --argjson busy $busy --argjson age $(( now - mtime )) --argjson agents "$agents" '

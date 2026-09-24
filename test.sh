@@ -36,6 +36,16 @@ echo "{\"session_id\":\"$sid\"}" | ./statusline.sh busy
 [[ -e $d/busy ]] && echo "ok    busy flag set" || { echo "FAIL  busy flag"; fail=1; }
 echo "{\"session_id\":\"$sid\"}" | ./statusline.sh idle
 [[ ! -e $d/busy ]] && echo "ok    busy flag cleared" || { echo "FAIL  idle"; fail=1; }
+# Esc-interrupt: Stop never fires, but the transcript ends with the interrupt note, so the flag is dropped
+echo "{\"session_id\":\"$sid\"}" | ./statusline.sh busy
+echo '{"type":"user","message":{"role":"user","content":[{"type":"text","text":"[Request interrupted by user]"}]}}' > "$T"
+jq -nc --arg t "$T" --arg sid "$sid" '{session_id:$sid, transcript_path:$t, model:{display_name:"Opus"}, cost:{total_cost_usd:1}, context_window:{used_percentage:10}, rate_limits:{five_hour:{used_percentage:30}}}' | ./statusline.sh >/dev/null
+[[ ! -e $d/busy ]] && echo "ok    interrupt clears busy" || { echo "FAIL  interrupt left busy set"; fail=1; }
+echo "{\"session_id\":\"$sid\"}" | ./statusline.sh busy
+echo '{"type":"assistant","message":{"content":[{"type":"text","text":"working"}]}}' > "$T"
+jq -nc --arg t "$T" --arg sid "$sid" '{session_id:$sid, transcript_path:$t, model:{display_name:"Opus"}, cost:{total_cost_usd:1}, context_window:{used_percentage:10}, rate_limits:{five_hour:{used_percentage:30}}}' | ./statusline.sh >/dev/null
+[[ -e $d/busy ]] && echo "ok    normal work keeps busy" || { echo "FAIL  busy dropped while working"; fail=1; }
+echo "{\"session_id\":\"$sid\"}" | ./statusline.sh idle; : > "$T"
 # agents: two start, boss face with count; one stops by id, one without id
 echo "{\"session_id\":\"$sid\",\"agent_id\":\"a1\"}" | ./statusline.sh agent-start
 echo "{\"session_id\":\"$sid\",\"agent_id\":\"a2\"}" | ./statusline.sh agent-start
