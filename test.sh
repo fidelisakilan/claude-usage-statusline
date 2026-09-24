@@ -28,6 +28,7 @@ run '(>▃▃<)' '.cost.total_lines_removed=400 | .cost.total_lines_added=100'
 run '(⌐■_■)' '.cost.total_lines_added=600'
 run '(-__-)' '.cost.total_duration_ms=18000000'
 run '(-zz-)' '.' 700
+run '(◕‿‿◕)' '.transcript_path="/nonexistent/new-session.jsonl"'  # new session, no transcript yet: awake
 run '(☓‿‿☓)' '.rate_limits.five_hour.used_percentage=100' 700
 run '(•‿‿•)' 'del(.rate_limits) | .context_window.used_percentage=50'
 # busy: hooks mark it; face animates (so check the mood family, not an exact frame)

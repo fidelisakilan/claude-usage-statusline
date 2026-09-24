@@ -19,7 +19,8 @@ fi
 input=$(cat)
 IFS=$'\t' read -r sid t < <(jq -r '[.session_id, .transcript_path // ""] | @tsv' <<<"$input")
 d=/tmp/claude-statusline/$sid; now=$(date +%s)
-mtime=$(stat -c %Y "$t" 2>/dev/null || stat -f %m "$t" 2>/dev/null || echo 0)  # Linux || macOS (GNU stat -f means something else)
+# Linux || macOS (GNU stat -f means something else) || no transcript yet: a brand-new session, so "just now"
+mtime=$(stat -c %Y "$t" 2>/dev/null || stat -f %m "$t" 2>/dev/null || echo "$now")
 # ponytail: an agent whose stop event is missed lingers at most 30 min
 agents=$(find "$d/agents" -type f -mmin -30 2>/dev/null | wc -l | tr -d ' ')
 # ponytail: Stop doesn't fire on Esc-interrupt, so busy also needs transcript activity in the last 60s
