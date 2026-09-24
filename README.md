@@ -12,7 +12,7 @@ A one-line [Claude Code](https://claude.com/claude-code) status line: model on t
 
 | Field | Meaning |
 |-------|---------|
-| `(ᵔ◡ᵔ)` | Mood face that tracks 5h usage (context use if there are no plan limits) and blinks now and then:<br>`(ᵔ◡ᵔ)` 0% · `(◕‿◕)` 15% · `(•‿•)` 30% · `(•_•)` 45% · `(¬_¬)` 60% · `(°□°)` 75% · `(ಥ_ಥ)` 90% · `(×_×)` 100% |
+| `(^‿^)` | Mood face that tracks 5h usage (context use if there are no plan limits) and blinks now and then:<br>`(^‿^)` 0% · `(^_^)` 15% · `(•‿•)` 30% · `(•_•)` 45% · `(¬_¬)` 60% · `(°□°)` 75% · `(ಥ_ಥ)` 90% · `(×_×)` 100% |
 | `$0.22` | Estimated cost of the current session (API pricing; not what a Pro/Max plan bills) |
 | `ctx` | Context window used |
 | `5h` | 5-hour plan usage limit used |
