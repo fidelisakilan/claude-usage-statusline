@@ -1,6 +1,6 @@
 # claude-usage-statusline
 
-A one-line [Claude Code](https://claude.com/claude-code) status line: model on the left; a mood face, session cost, context use, and plan usage limits on the right.
+A one-line [Claude Code](https://claude.com/claude-code) status line: a mood face and the model on the left; session cost, context use, and plan usage limits on the right.
 
 **Dark**
 
