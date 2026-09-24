@@ -1,6 +1,6 @@
 # claude-usage-statusline
 
-A one-line [Claude Code](https://claude.com/claude-code) status line: the model on the left; session cost, context use, plan usage limits, and a mood face on the right.
+A one-line [Claude Code](https://claude.com/claude-code) status line: the model on the left; a mood face, session cost, context use, and plan usage limits on the right.
 
 **Dark**
 
@@ -12,7 +12,7 @@ A one-line [Claude Code](https://claude.com/claude-code) status line: the model 
 
 | Field | Meaning |
 |-------|---------|
-| `(^‿^)` | Mood face that tracks 5h usage (context use if there are no plan limits) and blinks now and then:<br>`(^‿^)` 0% · `(^_^)` 15% · `(•‿•)` 30% · `(•_•)` 45% · `(¬_¬)` 60% · `(°□°)` 75% · `(ಥ_ಥ)` 90% · `(×_×)` 100% |
+| `^‿^` | Mood face that tracks 5h usage (context use if there are no plan limits) and blinks now and then:<br>`^‿^` 0% · `^_^` 15% · `•‿•` 30% · `•_•` 45% · `¬_¬` 60% · `°□°` 75% · `ಥ_ಥ` 90% · `×_×` 100% |
 | `$0.22` | Estimated cost of the current session (API pricing; not what a Pro/Max plan bills) |
 | `ctx` | Context window used |
 | `5h` | 5-hour plan usage limit used |

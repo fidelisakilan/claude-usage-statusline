@@ -1,5 +1,5 @@
 #!/bin/bash
-# Model on the left; cost · ctx % · 5h % · 7d % · mood face right-aligned
+# Model on the left; mood face · cost · ctx % · 5h % · 7d % right-aligned
 export LC_ALL=en_US.UTF-8
 { read -r model; read -r face; read -r color; read -r line; } < <(jq -r '
   def pct(p): "\(p // 0 | floor)%";
@@ -8,8 +8,8 @@ export LC_ALL=en_US.UTF-8
   (if $p >= 100 then 7 elif $p >= 90 then 6 else ([$p / 15 | floor, 5] | min) end) as $s |
   ((now / 2 | floor) % 6 == 5) as $blink |
   (.model.display_name | sub(" \\(.*\\)$"; "")),  # "Opus 5.5 (1M context)" → "Opus 5.5"
-  (if $blink then ["(-‿-)","(-_-)","(-‿-)","(-_-)"] else ["(^‿^)","(^_^)","(•‿•)","(•_•)"] end
-    + ["(¬_¬)","(°□°)","(ಥ_ಥ)","(×_×)"])[$s],
+  (if $blink then ["-‿-","-_-","-‿-","-_-"] else ["^‿^","^_^","•‿•","•_•"] end
+    + ["¬_¬","°□°","ಥ_ಥ","×_×"])[$s],
   (if $p >= 90 then 31 elif $p >= 75 then 91 elif $p >= 55 then 33 else 32 end),
   ([ "$" + ((.cost.total_cost_usd // 0) * 100 | round / 100 | tostring),
      "ctx " + pct(.context_window.used_percentage),
@@ -20,4 +20,4 @@ export LC_ALL=en_US.UTF-8
 cols=$( { stty size </dev/tty | cut -d" " -f2; } 2>/dev/null ); cols=${cols:-$COLUMNS}
 pad=$(( ${cols:-0} - ${#model} - ${#face} - 1 - ${#line} - 4 ))  # 4 = Claude Code's own left indent + margin
 (( pad < 2 )) && pad=2
-printf '%s%*s%s \e[%sm%s\e[0m' "$model" "$pad" '' "$line" "$color" "$face"
+printf '%s%*s\e[%sm%s\e[0m %s' "$model" "$pad" '' "$color" "$face" "$line"
