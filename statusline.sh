@@ -2,7 +2,7 @@
 # Mood face + model on the left; cost · ctx % · 5h % · 7d % right-aligned
 export LC_ALL=en_US.UTF-8
 { read -r model; read -r face; read -r color; read -r line; } < <(jq -r '
-  def pct(p): "\(p // 0 | floor)%" | " " * (4 - length) + .;  # fixed width so the face stays put
+  def pct(p): "\(p // 0 | floor)%";
   # face follows 5h usage (context use if no plan limits); blinks one refresh in six
   (.rate_limits.five_hour.used_percentage // .context_window.used_percentage // 0 | floor) as $p |
   (if $p >= 100 then 7 elif $p >= 90 then 6 else ([$p / 15 | floor, 5] | min) end) as $s |
