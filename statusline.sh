@@ -3,14 +3,20 @@
 export LC_ALL=en_US.UTF-8
 { read -r model; read -r face; read -r color; read -r line; } < <(jq -r '
   def pct(p): "\(p // 0 | floor)%";
-  # face follows 5h usage (context use if no plan limits); blinks one refresh in six
+  # pwnagotchi-style face: mood follows 5h usage (context use if no plan limits);
+  # each mood has 6 idle frames (glance, blink) stepped once per 2s refresh
   (.rate_limits.five_hour.used_percentage // .context_window.used_percentage // 0 | floor) as $p |
-  (if $p >= 100 then 7 elif $p >= 90 then 6 else ([$p / 15 | floor, 5] | min) end) as $s |
-  ((now / 2 | floor) % 6 == 5) as $blink |
+  ((now / 2 | floor) % 6) as $f |
+  (if $p >= 100 then ["(☓‿‿☓)","(☓‿‿☓)","(☓‿‿☓)","(☓‿‿☓)","(☓‿‿☓)","(☓‿‿☓)"]
+   elif $p >= 90 then ["(╥☁╥ )","(╥☁╥ )","( ╥☁╥)","(╥☁╥ )","(╥☁╥ )","(╥☁╥ )"]
+   elif $p >= 75 then ["(°▃▃°)","(°▃▃°)","( ⚆_⚆)","(☉_☉ )","(°▃▃°)","(°▃▃°)"]
+   elif $p >= 60 then ["(-__-)","(-__-)","(≖__≖)","(-__-)","(≖__≖)","(-__-)"]
+   elif $p >= 45 then ["(•‿‿•)","( ⚆_⚆)","(☉_☉ )","(•‿‿•)","(•‿‿•)","(-‿‿-)"]
+   elif $p >= 15 then ["(◕‿‿◕)","(◕‿‿◕)","( ◕‿◕)","(◕‿◕ )","(◕‿‿◕)","(-‿‿-)"]
+   else ["(ᵔ◡◡ᵔ)","(ᵔ◡◡ᵔ)","( ◕‿◕)","(◕‿◕ )","(ᵔ◡◡ᵔ)","(⌐■_■)"] end) as $frames |
   (.model.display_name | sub(" \\(.*\\)$"; "")),  # "Opus 5.5 (1M context)" → "Opus 5.5"
-  (if $blink then ["-‿-","-_-","-‿-","-_-"] else ["^‿^","^_^","•‿•","•_•"] end
-    + ["¬_¬","°□°","ಥ_ಥ","×_×"])[$s],
-  (if $p >= 90 then 31 elif $p >= 75 then 91 elif $p >= 55 then 33 else 32 end),
+  $frames[$f],
+  (if $p >= 90 then 31 elif $p >= 75 then 91 elif $p >= 60 then 33 else 32 end),
   ([ "$" + ((.cost.total_cost_usd // 0) * 100 | round / 100 | tostring),
      "ctx " + pct(.context_window.used_percentage),
      (if .rate_limits.five_hour then "5h " + pct(.rate_limits.five_hour.used_percentage) else empty end),
