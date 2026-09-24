@@ -1,7 +1,7 @@
 #!/bin/bash
 # Model on the left; mood face · cost · ctx % · 5h % · 7d % right-aligned
 export LC_ALL=en_US.UTF-8
-{ read -r model; read -r face; read -r line; } < <(jq -r '
+{ read -r model; read -r face; read -r color; read -r line; } < <(jq -r '
   def pct(p): "\(p // 0 | floor)%";
   # pwnagotchi-style face: mood follows 5h usage (context use if no plan limits);
   # each mood has 6 idle frames (glance, blink) stepped once per 2s refresh
@@ -16,6 +16,7 @@ export LC_ALL=en_US.UTF-8
    else ["(ᵔ◡◡ᵔ)","(ᵔ◡◡ᵔ)","( ◕‿◕)","(◕‿◕ )","(ᵔ◡◡ᵔ)","(⌐■_■)"] end) as $frames |
   (.model.display_name | sub(" \\(.*\\)$"; "")),  # "Opus 5.5 (1M context)" → "Opus 5.5"
   $frames[$f],
+  (if $p >= 90 then 31 elif $p >= 75 then 91 elif $p >= 60 then 33 else 32 end),
   ([ "$" + ((.cost.total_cost_usd // 0) * 100 | round / 100 | tostring),
      "ctx " + pct(.context_window.used_percentage),
      (if .rate_limits.five_hour then "5h " + pct(.rate_limits.five_hour.used_percentage) else empty end),
@@ -25,4 +26,4 @@ export LC_ALL=en_US.UTF-8
 cols=$( { stty size </dev/tty | cut -d" " -f2; } 2>/dev/null ); cols=${cols:-$COLUMNS}
 pad=$(( ${cols:-0} - ${#model} - ${#face} - 3 - ${#line} - 4 ))  # 4 = Claude Code's own left indent + margin
 (( pad < 2 )) && pad=2
-printf '%s%*s%s · %s' "$model" "$pad" '' "$face" "$line"
+printf '%s%*s\e[%sm%s\e[0m · %s' "$model" "$pad" '' "$color" "$face" "$line"
