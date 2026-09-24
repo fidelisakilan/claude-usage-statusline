@@ -34,8 +34,8 @@ busy=false; { [[ -e $d/busy ]] && (( now - mtime < 60 )); } || (( agents > 0 )) 
   ((.cost.total_duration_ms // 0) / 3600000) as $hrs |
   (now | localtime | .[3]) as $hour |
   (((.rate_limits.five_hour.resets_at // 0) - now) / 60 | floor) as $left |
-  # animate only while busy: one frame per 2s refresh; frame 0 is each mood'"'"'s resting face
-  (now / 2 | floor) as $t | (if $busy then $t % 6 else 0 end) as $f |
+  # animate only while busy: one frame per 1s refresh; frame 0 is each mood'"'"'s resting face
+  (now | floor) as $t | (if $busy then $t % 6 else 0 end) as $f |
   # first match wins
   (if $p >= 100 or $w >= 100 then ["(☓‿‿☓)"]                                                 # dead
    elif ($busy | not) and $age >= 600 then ["(-zz-)"]                                        # asleep (10 min idle)
@@ -45,7 +45,7 @@ busy=false; { [[ -e $d/busy ]] && (( now - mtime < 60 )); } || (( agents > 0 )) 
    elif $w >= 90 then ["(ಠ_ಠ )","(ಠ_ಠ )","( ಠ_ಠ)","(ಠ_ಠ )","(ಠ▃▃ಠ)","(ಠ_ಠ )"]             # grim
    elif $p >= 75 then ["(°▃▃°)","(°▃▃°)","( ⚆_⚆)","(☉_☉ )","(°▃▃°)","(°▃▃°)"]             # alarmed
    elif $agents > 0 then ["(ಠ‿‿ಠ)","(ಠ‿‿ಠ)","( ಠ‿ಠ)","(ಠ‿ಠ )","(ಠ‿‿ಠ)","(-‿‿-)"]           # boss
-   elif $busy and $t % 60 == 59 then ["(⌐■_■)"]                                               # easter egg
+   elif $busy and $t % 120 == 119 then ["(⌐■_■)"]                                             # easter egg
    elif $usd >= 50 then ["($▃▃$)","($▃▃$)","($__$)","($▃▃$)","( $▃$)","($▃$ )"]              # whale
    elif $usd >= 10 then ["($‿‿$)","($‿‿$)","( $‿$)","($‿$ )","($‿‿$)","($▃▃$)"]              # rich
    elif $del >= 300 and $del > $add then ["(>▃▃<)","(>▃▃<)","(>__<)","(>▃▃<)","( >▃<)","(>▃< )"]  # demolition
