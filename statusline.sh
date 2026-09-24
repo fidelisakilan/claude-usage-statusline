@@ -58,7 +58,7 @@ busy=false; { [[ -e $d/busy ]] && (( now - mtime < 60 )); } || (( agents > 0 )) 
   (.model.display_name | sub(" \\(.*\\)$"; "")),  # "Opus 5.5 (1M context)" → "Opus 5.5"
   $frames[$f % ($frames | length)] + (if $agents > 0 then " x\($agents)" else "" end),
   (if $p >= 90 then 31 elif $p >= 75 then 91 elif $p >= 60 then 33 else 32 end),
-  ([ "$" + ((.cost.total_cost_usd // 0) * 100 | round / 100 | tostring),
+  ([ ((.cost.total_cost_usd // 0) * 100 | round) as $c | "$\($c / 100 | floor).\($c % 100 / 10 | floor)\($c % 10)",
      "ctx " + pct(.context_window.used_percentage),
      (if .rate_limits.five_hour then "5h " + pct(.rate_limits.five_hour.used_percentage) else empty end),
      (if .rate_limits.seven_day then "7d " + pct(.rate_limits.seven_day.used_percentage) else empty end)

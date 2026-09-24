@@ -2,13 +2,10 @@
 
 A little pet that lives in your [Claude Code](https://claude.com/claude-code) status line. Its mood tracks your session: it's bouncy when you start, gets `$` eyes as the bill climbs, side-eyes you as your usage limit runs low, and keels over when you hit it. It fidgets while Claude works and falls asleep when you walk away.
 
-**Dark**
-
-![tokamon, dark mode](screenshots/dark.png)
-
-**Light**
-
-![tokamon, light mode](screenshots/light.png)
+| | Idle | Working |
+|---|---|---|
+| **Dark** | ![all moods, idle, dark](screenshots/dark-static.png) | ![all moods, working, dark](screenshots/dark-moving.gif) |
+| **Light** | ![all moods, idle, light](screenshots/light-static.png) | ![all moods, working, light](screenshots/light-moving.gif) |
 
 ## Moods
 
@@ -67,4 +64,4 @@ The hooks tell tokamon when Claude is working and how many subagents are running
 
 - `refreshInterval: 1` redraws every second (the fastest Claude Code allows) so the pet can animate and the right-alignment catches up after you resize or zoom. Each run takes about 18ms.
 - Right alignment reads the terminal width from `/dev/tty`, then `$COLUMNS`. If neither is available, the stats sit two spaces after the model name.
-- Run `./test.sh` to check every mood resolves correctly.
+- Run `./test.sh` to check every mood resolves correctly. `screenshots/gallery.sh static|moving` draws every mood for screenshots.
