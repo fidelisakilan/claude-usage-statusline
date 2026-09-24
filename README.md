@@ -10,10 +10,6 @@ A one-line [Claude Code](https://claude.com/claude-code) status line: model on t
 
 ![status line, light mode](screenshots/light.png)
 
-```
-Opus 5.5 (1M context)                              $0.22 · ctx 4% · 5h 12% · 7d 30%
-```
-
 | Field | Meaning |
 |-------|---------|
 | `$0.22` | Estimated cost of the current session (API pricing; not what a Pro/Max plan bills) |
