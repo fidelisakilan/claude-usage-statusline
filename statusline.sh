@@ -2,7 +2,8 @@
 # tokamon, a pet for the Claude Code status line: model on the left; pet face · cost · ctx % · 5h % · 7d % right-aligned.
 # Hooks call `statusline.sh busy|idle|agent-start|agent-stop` so the pet knows when Claude
 # is working and how many subagents are running (see README).
-export LC_ALL=en_US.UTF-8
+# UTF-8 so ${#var} counts characters, not bytes; macOS lacks C.UTF-8, many Linux images lack en_US.UTF-8
+[[ $OSTYPE == darwin* ]] && export LC_ALL=en_US.UTF-8 || export LC_ALL=C.UTF-8
 if [[ $1 ]]; then
   IFS=$'\t' read -r sid aid < <(jq -r '[.session_id, .agent_id // ""] | @tsv')
   d=/tmp/claude-statusline/$sid; mkdir -p "$d/agents"
@@ -18,7 +19,7 @@ fi
 input=$(cat)
 IFS=$'\t' read -r sid t < <(jq -r '[.session_id, .transcript_path // ""] | @tsv' <<<"$input")
 d=/tmp/claude-statusline/$sid; now=$(date +%s)
-mtime=$(stat -f %m "$t" 2>/dev/null || stat -c %Y "$t" 2>/dev/null || echo 0)  # macOS || Linux
+mtime=$(stat -c %Y "$t" 2>/dev/null || stat -f %m "$t" 2>/dev/null || echo 0)  # Linux || macOS (GNU stat -f means something else)
 # ponytail: an agent whose stop event is missed lingers at most 30 min
 agents=$(find "$d/agents" -type f -mmin -30 2>/dev/null | wc -l | tr -d ' ')
 # ponytail: Stop doesn't fire on Esc-interrupt, so busy also needs transcript activity in the last 60s

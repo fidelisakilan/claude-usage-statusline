@@ -12,16 +12,23 @@ Your tokamon sits next to your usage stats and reacts to your session. It starts
 
 ## Install
 
-You need [Claude Code](https://claude.com/claude-code) and `jq`.
+You need [Claude Code](https://claude.com/claude-code), `jq` and `bash` (macOS, Linux, or WSL on Windows).
 
-**1. Get the script**
+```sh
+curl -fsSL https://raw.githubusercontent.com/fidelisakilan/tokamon/main/install.sh | bash
+```
+
+This copies `statusline.sh` to `~/.claude/` and adds the status line and four hooks to `~/.claude/settings.json`, keeping everything else in it. Your old settings are saved to `settings.json.bak`, and running it again is safe.
+
+<details>
+<summary>Manual install</summary>
 
 ```sh
 curl -o ~/.claude/statusline.sh https://raw.githubusercontent.com/fidelisakilan/tokamon/main/statusline.sh
 chmod +x ~/.claude/statusline.sh
 ```
 
-**2. Add it to `~/.claude/settings.json`** (merge with any hooks you already have)
+Then add to `~/.claude/settings.json`, merging with any hooks you already have:
 
 ```json
 {
@@ -34,6 +41,8 @@ chmod +x ~/.claude/statusline.sh
   }
 }
 ```
+
+</details>
 
 Your tokamon hatches on the next redraw.
 
@@ -85,11 +94,15 @@ The face's colour warns you as the 5-hour limit fills: green, yellow at 60%, ora
 
 All thresholds (the $10 and $50 money marks, the 10-minute nap, and so on) and every face live in one block in `statusline.sh`, marked `# first match wins`. Edit and save; the next redraw picks it up.
 
-Run `./test.sh` to check every mood still resolves. `screenshots/gallery.sh static|moving` draws all the moods at once, which is handy for trying out new faces.
+Run `./test.sh` to check every mood still resolves (tested on macOS, Debian, Ubuntu and Alpine). `screenshots/gallery.sh static|moving` draws all the moods at once, which is handy for trying out new faces.
 
 ## Uninstall
 
-Delete `~/.claude/statusline.sh`, then remove the `statusLine` entry and the four hooks from `~/.claude/settings.json`.
+```sh
+curl -fsSL https://raw.githubusercontent.com/fidelisakilan/tokamon/main/install.sh | bash -s uninstall
+```
+
+This removes the script, the status line and the four hooks, and leaves the rest of your settings alone.
 
 ## Credits
 

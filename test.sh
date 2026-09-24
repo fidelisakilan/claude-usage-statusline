@@ -1,10 +1,10 @@
 #!/bin/bash
 # Checks each pet mood resolves as expected. Run: ./test.sh  (run before 6am and "sleepy" wins some cases)
-cd "$(dirname "$0")"; export LC_ALL=en_US.UTF-8
+cd "$(dirname "$0")"
 T=$(mktemp); sid=test-$$; d=/tmp/claude-statusline/$sid; fail=0; now=$(date +%s)
 trap 'rm -rf "$T" "$d"' EXIT
 run() { # expected-face  jq-overrides  [transcript-age-seconds]
-  touch -t "$(date -r $(( now - ${3:-0} )) +%Y%m%d%H%M.%S)" "$T"
+  ts=$(( now - ${3:-0} )); touch -d "@$ts" "$T" 2>/dev/null || touch -t "$(date -r $ts +%Y%m%d%H%M.%S)" "$T"  # GNU || BSD
   got=$(jq -nc --arg t "$T" --arg sid "$sid" "{session_id:\$sid, transcript_path:\$t, model:{display_name:\"Opus 5.5 (1M context)\"},
     cost:{total_cost_usd:1, total_duration_ms:0, total_lines_added:0, total_lines_removed:0},
     context_window:{used_percentage:10}, rate_limits:{five_hour:{used_percentage:30, resets_at:($now+9999)}, seven_day:{used_percentage:30}}} | $2" \
