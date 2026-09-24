@@ -24,6 +24,6 @@ export LC_ALL=en_US.UTF-8
    ] | join(" · "))')
 # ponytail: width from the controlling tty, then $COLUMNS; falls back to 2 spaces if neither exists
 cols=$( { stty size </dev/tty | cut -d" " -f2; } 2>/dev/null ); cols=${cols:-$COLUMNS}
-pad=$(( ${cols:-0} - ${#model} - ${#face} - 1 - ${#line} - 4 ))  # 4 = Claude Code's own left indent + margin
+pad=$(( ${cols:-0} - ${#model} - ${#face} - 3 - ${#line} - 4 ))  # 4 = Claude Code's own left indent + margin
 (( pad < 2 )) && pad=2
-printf '%s%*s\e[%sm%s\e[0m %s' "$model" "$pad" '' "$color" "$face" "$line"
+printf '%s%*s\e[%sm%s\e[0m · %s' "$model" "$pad" '' "$color" "$face" "$line"
