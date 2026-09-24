@@ -2,6 +2,8 @@
 
 **A tiny pet that lives in your Claude Code status line and feeds on your tokens.**
 
+![tokamon in the Claude Code status line](screenshots/default.png)
+
 Your tokamon sits next to your usage stats and reacts to your session. It starts out bouncy, gets `$` eyes as the bill climbs, side-eyes you as your usage limit runs low, and keels over when you hit it. It fidgets while Claude works, bosses subagents around, and falls asleep when you walk away.
 
 ## Install
