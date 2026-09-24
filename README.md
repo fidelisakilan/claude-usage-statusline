@@ -1,44 +1,70 @@
-# claude-usage-statusline
+# tokamon
 
-A one-line [Claude Code](https://claude.com/claude-code) status line: the model on the left; a mood face, session cost, context use, and plan usage limits on the right.
+A little pet that lives in your [Claude Code](https://claude.com/claude-code) status line. Its mood tracks your session: it's bouncy when you start, gets `$` eyes as the bill climbs, side-eyes you as your usage limit runs low, and keels over when you hit it. It fidgets while Claude works and falls asleep when you walk away.
 
 **Dark**
 
-![status line, dark mode](screenshots/dark.png)
+![tokamon, dark mode](screenshots/dark.png)
 
 **Light**
 
-![status line, light mode](screenshots/light.png)
+![tokamon, light mode](screenshots/light.png)
 
-| Field | Meaning |
-|-------|---------|
-| `(◕‿‿◕)` | [Pwnagotchi](https://pwnagotchi.ai)-style face whose mood tracks 5h usage (context use if there are no plan limits); it glances around and blinks between refreshes:<br>`(ᵔ◡◡ᵔ)` 0% · `(◕‿‿◕)` 15% · `(•‿‿•)` 45% · `(-__-)` 60% · `(°▃▃°)` 75% · `(╥☁╥ )` 90% · `(☓‿‿☓)` 100% |
-| `$0.22` | Estimated cost of the current session (API pricing; not what a Pro/Max plan bills) |
-| `ctx` | Context window used |
-| `5h` | 5-hour plan usage limit used |
-| `7d` | Weekly plan usage limit used |
+## Moods
 
-`5h`/`7d` only appear when Claude Code provides rate-limit data (subscription plans).
+When several apply, the first match wins. The face is coloured by 5-hour usage: green, then yellow at 60%, orange at 75%, red at 90%.
+
+| Face | Mood | When |
+|------|------|------|
+| `(☓‿‿☓)` | dead | 5h or 7d limit at 100% |
+| `(-zz-)` | asleep | idle for 10 minutes |
+| `(@▃▃@)` | stuffed | context window 90%+ full |
+| `(◔‿‿◔)` | almost free | 5h at 60%+ and it resets within 20 minutes |
+| `(╥☁╥ )` | crying | 5h at 90%+ |
+| `(ಠ_ಠ )` | grim | 7d at 90%+ |
+| `(°▃▃°)` | alarmed | 5h at 75%+ |
+| `(ಠ‿‿ಠ) x2` | boss | subagents running (with a count) |
+| `($▃▃$)` | whale | session cost $50+ |
+| `($‿‿$)` | rich | session cost $10+ |
+| `(>▃▃<)` | demolition | 300+ lines removed, more than added |
+| `(⌐■_■)` | builder | 500+ lines added |
+| `(-__-)` | sleepy | session over 4 hours, or midnight to 6am |
+| `(≖__≖)` | bored | 5h at 60%+ |
+| `(•‿‿•)` | neutral | 5h at 45%+ |
+| `(◕‿‿◕)` | happy | 5h at 15%+ |
+| `(ᵔ◡◡ᵔ)` | giddy | 5h under 15% |
+
+While Claude is working, the face animates: it glances around, blinks, and now and then puts on shades. When idle it holds still. On API-key plans without usage limits, context use stands in for 5h usage.
+
+Next to the pet: session cost (estimated at API prices, not what a Pro/Max plan bills), context used, and 5-hour and weekly limit used.
 
 ## Install
 
 Requires `jq`.
 
 ```sh
-curl -o ~/.claude/statusline.sh https://raw.githubusercontent.com/fidelisakilan/claude-usage-statusline/main/statusline.sh
+curl -o ~/.claude/statusline.sh https://raw.githubusercontent.com/fidelisakilan/tokamon/main/statusline.sh
 chmod +x ~/.claude/statusline.sh
 ```
 
-Add to `~/.claude/settings.json`:
+Add to `~/.claude/settings.json` (merge with any hooks you already have):
 
 ```json
 {
-  "statusLine": { "type": "command", "command": "~/.claude/statusline.sh", "refreshInterval": 1 }
+  "statusLine": { "type": "command", "command": "~/.claude/statusline.sh", "refreshInterval": 1 },
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "~/.claude/statusline.sh busy" }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "~/.claude/statusline.sh idle" }] }],
+    "SubagentStart":    [{ "hooks": [{ "type": "command", "command": "~/.claude/statusline.sh agent-start" }] }],
+    "SubagentStop":     [{ "hooks": [{ "type": "command", "command": "~/.claude/statusline.sh agent-stop" }] }]
+  }
 }
 ```
 
+The hooks tell tokamon when Claude is working and how many subagents are running. Without them the pet still shows its mood, it just never animates.
+
 ## Notes
 
-Right alignment reads the terminal width from `/dev/tty`, then `$COLUMNS`. If neither is available, the usage stats sit two spaces after the model name.
-
-`refreshInterval: 1` re-runs the script every second so the alignment catches up after you resize or zoom the terminal; without it, Claude Code only redraws the status line on conversation events.
+- `refreshInterval: 1` redraws every second (the fastest Claude Code allows) so the pet can animate and the right-alignment catches up after you resize or zoom. Each run takes about 18ms.
+- Right alignment reads the terminal width from `/dev/tty`, then `$COLUMNS`. If neither is available, the stats sit two spaces after the model name.
+- Run `./test.sh` to check every mood resolves correctly.

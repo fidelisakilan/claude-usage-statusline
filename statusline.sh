@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pet status line: model on the left; pet face · cost · ctx % · 5h % · 7d % right-aligned.
+# tokamon, a pet for the Claude Code status line: model on the left; pet face · cost · ctx % · 5h % · 7d % right-aligned.
 # Hooks call `statusline.sh busy|idle|agent-start|agent-stop` so the pet knows when Claude
 # is working and how many subagents are running (see README).
 export LC_ALL=en_US.UTF-8
