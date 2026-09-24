@@ -29,7 +29,7 @@ agents=$(find "$d/agents" -type f -mmin -30 2>/dev/null | wc -l | tr -d ' ')
   && rm -f "$d/busy"
 # ponytail: busy also needs transcript activity in the last 60s, a backstop for anything else that skips Stop
 busy=false; { [[ -e $d/busy ]] && (( now - mtime < 60 )); } || (( agents > 0 )) && busy=true
-{ read -r model; read -r face; read -r color; read -r line; } < <(jq -r \
+{ read -r model; read -r mood; read -r face; read -r color; read -r line; } < <(jq -r \
   --argjson busy $busy --argjson age $(( now - mtime )) --argjson agents "$agents" '
   def pct(p): "\(p // 0 | floor)%";
   (.rate_limits.five_hour.used_percentage // .context_window.used_percentage // 0 | floor) as $p |
@@ -40,28 +40,33 @@ busy=false; { [[ -e $d/busy ]] && (( now - mtime < 60 )); } || (( agents > 0 )) 
   ((.cost.total_duration_ms // 0) / 3600000) as $hrs |
   (now | localtime | .[3]) as $hour |
   (((.rate_limits.five_hour.resets_at // 0) - now) / 60 | floor) as $left |
-  # animate only while busy: one frame per 1s refresh; frame 0 is each mood'"'"'s resting face
+  # animate only while busy: one frame per 1s refresh; frame 0 is each mood'"'"'s resting face.
+  # Frames only blink (eyes -> "-") or move the mouth, never shift, so the line never jitters.
+  # Eyes say what it'"'"'s about ($ money, ⌐■ building, >< demolishing); mouth says how hard: ‿ → ▃ → Д
   (now | floor) as $t | (if $busy then $t % 6 else 0 end) as $f |
   # first match wins
-  (if $p >= 100 or $w >= 100 then ["(☓‿‿☓)"]                                                 # dead
-   elif ($busy | not) and $age >= 600 then ["(-zz-)"]                                        # asleep (10 min idle)
-   elif $ctx >= 90 then ["(@▃▃@)","(@__@)","(@_@ )","( @_@)","(@▃▃@)","(@__@)"]             # stuffed
-   elif $p >= 60 and $left > 0 and $left <= 20 then ["(◔‿‿◔)","(◔‿‿◔)","(◔__◔)","(◔_◔ )","(◕‿‿◕)","(◔‿‿◔)"]  # almost free
-   elif $p >= 90 then ["(╥☁╥ )","(╥☁╥ )","( ╥☁╥)","(╥☁╥ )","(╥☁╥ )","(╥☁╥ )"]             # crying
-   elif $w >= 90 then ["(ಠ_ಠ )","(ಠ_ಠ )","( ಠ_ಠ)","(ಠ_ಠ )","(ಠ▃▃ಠ)","(ಠ_ಠ )"]             # grim
-   elif $p >= 75 then ["(°▃▃°)","(°▃▃°)","( ⚆_⚆)","(☉_☉ )","(°▃▃°)","(°▃▃°)"]             # alarmed
-   elif $agents > 0 then ["(ಠ‿‿ಠ)","(ಠ‿‿ಠ)","( ಠ‿ಠ)","(ಠ‿ಠ )","(ಠ‿‿ಠ)","(-‿‿-)"]           # boss
-   elif $busy and $t % 120 == 119 then ["(⌐■_■)"]                                             # easter egg
-   elif $usd >= 50 then ["($▃▃$)","($▃▃$)","($__$)","($▃▃$)","( $▃$)","($▃$ )"]              # whale
-   elif $usd >= 10 then ["($‿‿$)","($‿‿$)","( $‿$)","($‿$ )","($‿‿$)","($▃▃$)"]              # rich
-   elif $del >= 300 and $del > $add then ["(>▃▃<)","(>▃▃<)","(>__<)","(>▃▃<)","( >▃<)","(>▃< )"]  # demolition
-   elif $add >= 500 then ["(⌐■_■)","(⌐■_■)","(⌐■‿■)","(⌐■_■)","(⌐■_■)","(⌐■‿■)"]            # builder
-   elif $hrs >= 4 or $hour < 6 then ["(-__-)","(-__-)","(-oo-)","(-__-)","(-__-)","(-oo-)"]  # sleepy
-   elif $p >= 60 then ["(≖__≖)","(≖__≖)","(-__-)","(≖__≖)","(≖_≖ )","( ≖_≖)"]               # bored
-   elif $p >= 45 then ["(•‿‿•)","( ⚆_⚆)","(☉_☉ )","(•‿‿•)","(•‿‿•)","(-‿‿-)"]               # neutral
-   elif $p >= 15 then ["(◕‿‿◕)","(◕‿‿◕)","( ◕‿◕)","(◕‿◕ )","(◕‿‿◕)","(-‿‿-)"]               # happy
-   else ["(ᵔ◡◡ᵔ)","(ᵔ◡◡ᵔ)","( ◕‿◕)","(◕‿◕ )","(ᵔ◡◡ᵔ)","(⌐■_■)"] end) as $frames |          # giddy
+  (if $p >= 100 or $w >= 100 then ["dead","(x_x)"]
+   elif ($busy | not) and $age >= 600 then ["asleep","(-_-)zz"]  # 10 min idle
+   elif $ctx >= 90 then ["stuffed","(◉Д◉)","(◉Д◉)","(-Д-)","(◉Д◉)","(◉_◉)","(◉Д◉)"]
+   elif $p >= 60 and $left > 0 and $left <= 20 then ["clock-watching","(◔_◔)","(◔_◔)","(-_-)","(◔_◔)","(◔‿◔)","(◔_◔)"] # clock-watching
+   elif $p >= 90 then ["crying","(╥_╥)","(╥_╥)","(╥▃╥)","(╥_╥)","(╥o╥)","(╥_╥)"]
+   elif $w >= 90 then ["grim","(ಠ_ಠ)","(ಠ_ಠ)","(-_-)","(ಠ_ಠ)","(ಠ▃ಠ)","(ಠ_ಠ)"]
+   elif $p >= 75 then ["worried","(°▃°)","(°▃°)","(-▃-)","(°▃°)","(°Д°)","(°▃°)"]
+   elif $agents > 0 then ["boss","(¬‿¬)","(¬‿¬)","(-‿-)","(¬‿¬)","(¬▃¬)","(¬‿¬)"]
+   elif $busy and $t % 120 == 119 then ["shades","(⌐■_■)"]  # easter egg
+   elif $usd >= 100 then ["bonfire","($Д$)","($Д$)","(-Д-)","($Д$)","($▃$)","($Д$)"]
+   elif $usd >= 50 then ["whale","($▃$)","($▃$)","(-▃-)","($▃$)","($Д$)","($▃$)"]
+   elif $usd >= 10 then ["rich","($‿$)","($‿$)","(-‿-)","($‿$)","($▃$)","($‿$)"]
+   elif $del >= 1000 and $del > $add then ["wrecking ball","(>Д<)","(>Д<)","(>_<)","(>Д<)","(>▃<)","(>Д<)"]
+   elif $del >= 300 and $del > $add then ["demolition","(>▃<)","(>▃<)","(>_<)","(>▃<)","(>Д<)","(>▃<)"]
+   elif $add >= 2000 then ["architect","(⌐■‿■)","(⌐■‿■)","(⌐■_■)","(⌐■‿■)","(⌐■‿■)","(⌐■_■)"]
+   elif $add >= 500 then ["builder","(⌐■_■)","(⌐■_■)","(⌐■‿■)","(⌐■_■)","(⌐■_■)","(⌐■‿■)"]
+   elif $hrs >= 4 or $hour < 6 then ["yawning","(-o-)","(-o-)","(-_-)","(-o-)","(-O-)","(-o-)"]
+   elif $p >= 60 then ["meh","(≖_≖)","(≖_≖)","(-_-)","(≖_≖)","(≖▃≖)","(≖_≖)"]
+   elif $p >= 15 then ["happy","(◕‿◕)","(◕‿◕)","(-‿-)","(◕‿◕)","(◕_◕)","(◕‿◕)"]
+   else ["fresh","(^‿^)","(^‿^)","(-‿-)","(^‿^)","(^o^)","(^‿^)"] end) as $m | $m[0] as $mood | $m[1:] as $frames |
   (.model.display_name | sub(" \\(.*\\)$"; "")),  # "Opus 5.5 (1M context)" → "Opus 5.5"
+  $mood,
   $frames[$f % ($frames | length)] + (if $agents > 0 then " x\($agents)" else "" end),
   (if $p >= 90 then 31 elif $p >= 75 then 91 elif $p >= 60 then 33 else 32 end),
   ([ ((.cost.total_cost_usd // 0) * 100 | round) as $c | "$\($c / 100 | floor).\($c % 100 / 10 | floor)\($c % 10)",
@@ -71,6 +76,6 @@ busy=false; { [[ -e $d/busy ]] && (( now - mtime < 60 )); } || (( agents > 0 )) 
    ] | join(" · "))' <<<"$input")
 # ponytail: width from the controlling tty, then $COLUMNS; falls back to 2 spaces if neither exists
 cols=$( { stty size </dev/tty | cut -d" " -f2; } 2>/dev/null ); cols=${cols:-$COLUMNS}
-pad=$(( ${cols:-0} - ${#model} - ${#face} - 3 - ${#line} - 4 ))  # 4 = Claude Code's own left indent + margin
+pad=$(( ${cols:-0} - ${#model} - ${#mood} - 1 - ${#face} - 3 - ${#line} - 4 ))  # 4 = Claude Code's own left indent + margin
 (( pad < 2 )) && pad=2
-printf '%s%*s\e[%sm%s\e[0m · %s' "$model" "$pad" '' "$color" "$face" "$line"
+printf '%s%*s\e[2m%s\e[0m \e[%sm%s\e[0m · %s' "$model" "$pad" '' "$mood" "$color" "$face" "$line"
