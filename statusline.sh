@@ -5,13 +5,16 @@
 # UTF-8 so ${#var} counts characters, not bytes; macOS lacks C.UTF-8, many Linux images lack en_US.UTF-8
 [[ $OSTYPE == darwin* ]] && export LC_ALL=en_US.UTF-8 || export LC_ALL=C.UTF-8
 if [[ $1 ]]; then
-  IFS=$'\t' read -r sid aid < <(jq -r '[.session_id, .agent_id // ""] | @tsv')
-  d=/tmp/claude-statusline/$sid; mkdir -p "$d/agents"
+  IFS=$'\t' read -r sid aid t < <(jq -r '[.session_id, .agent_id // "", .transcript_path // ""] | @tsv')
+  d=/tmp/claude-statusline/$sid; mkdir -p "$d/agents"; a=${t%.jsonl}/subagents/agent-$aid.jsonl
   case $1 in
     busy) touch "$d/busy" ;;
     idle) rm -f "$d/busy" ;;
     agent-start) touch "$d/agents/${aid:-$RANDOM$RANDOM}" ;;
-    agent-stop) if [[ -n $aid && -e $d/agents/$aid ]]; then rm -f "$d/agents/$aid"
+    # SubagentStop also fires when an agent ends its turn to wait on background work; keep it counted until it hands back
+    agent-stop) if [[ -n $aid && -e $d/agents/$aid ]]; then
+                  grep -q 'Command running in background\|Async agent launched' "$a" 2>/dev/null \
+                    && ! grep -q '"name":"SubagentHandback","input"' "$a" || rm -f "$d/agents/$aid"
                 else ls -t "$d/agents" | tail -1 | xargs -I{} rm -f "$d/agents/{}"; fi ;;  # no id: drop oldest
   esac
   exit
@@ -21,7 +24,9 @@ IFS=$'\t' read -r sid t < <(jq -r '[.session_id, .transcript_path // ""] | @tsv'
 d=/tmp/claude-statusline/$sid; now=$(date +%s)
 # Linux || macOS (GNU stat -f means something else) || no transcript yet: a brand-new session, so "just now"
 mtime=$(stat -c %Y "$t" 2>/dev/null || stat -f %m "$t" 2>/dev/null || echo "$now")
-# ponytail: an agent whose stop event is missed lingers at most 30 min
+# Drop agents kept by agent-stop once they hand back.
+# ponytail: SubagentHandback is Claude Code internals; if it changes, or a stop is missed, an agent lingers at most 30 min
+for f in "$d"/agents/*; do grep -q '"name":"SubagentHandback","input"' "${t%.jsonl}/subagents/agent-${f##*/}.jsonl" 2>/dev/null && rm -f "$f"; done
 agents=$(find "$d/agents" -type f -mmin -30 2>/dev/null | wc -l | tr -d ' ')
 # Stop doesn't fire on Esc-interrupt, but the transcript's last entry becomes "[Request interrupted by user]"
 [[ -e $d/busy ]] && tail -n 1 "$t" 2>/dev/null | jq -e 'select(.type == "user") | .message.content
